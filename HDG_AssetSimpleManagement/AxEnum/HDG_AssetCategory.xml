@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxEnum xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_AssetCategory</Name>
+	<Label>@HDG:AssetCategory</Label>
+	<EnumValues>
+		<AxEnumValue>
+			<Name>None</Name>
+			<Label>@HDG:None</Label>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Electronic</Name>
+			<Label>@HDG:Electronic</Label>
+			<Value>1</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Furniture</Name>
+			<Label>@HDG:Furniture</Label>
+			<Value>2</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Supplies</Name>
+			<Label>@HDG:Supplies</Label>
+			<Value>3</Value>
+		</AxEnumValue>
+	</EnumValues>
+</AxEnum>

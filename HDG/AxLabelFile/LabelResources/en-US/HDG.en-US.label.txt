@@ -1,0 +1,8 @@
+﻿AssetCategory=Asset category
+AssetId=Asset ID
+AssetName=Asset name
+AssetTable=Asset management
+Electronic=Electronic
+Furniture=Furniture
+None=None
+Supplies=Supplies

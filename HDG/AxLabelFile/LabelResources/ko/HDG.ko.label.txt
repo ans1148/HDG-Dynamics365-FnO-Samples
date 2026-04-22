@@ -1,0 +1,8 @@
+﻿AssetCategory=비품 분류
+AssetId=비품 코드
+AssetName=비품 명칭
+AssetTable=사무용 비품
+Electronic=전자제품
+Furniture=가구
+None=없음
+Supplies=소모품
