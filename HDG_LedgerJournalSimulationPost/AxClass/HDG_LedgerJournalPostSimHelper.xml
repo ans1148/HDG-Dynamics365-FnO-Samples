@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_LedgerJournalPostSimHelper</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class HDG_LedgerJournalPostSimHelper
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>deleteExistingSimulationData</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Deletes existing simulation data for the given journal
+    /// </summary>
+    /// <param name = "_ledgerJournalId">Journal ID</param>
+    /// <param name = "_userConnection">User connection for persistent data</param>
+    public static void deleteExistingSimulationData(LedgerJournalId _ledgerJournalId, UserConnection _userConnection = null)
+    {
+        HDG_GeneralJournalAccountEntrySim generalJournalAccountEntrySim;
+        HDG_GeneralJournalEntrySim generalJournalEntrySim;
+        HDG_LedgerEntryJournalSim ledgerEntryJournalSim;
+
+        // UserConnection이 제공되면 모든 테이블에 적용
+        if (_userConnection)
+        {
+            generalJournalAccountEntrySim.setConnection(_userConnection);
+            generalJournalEntrySim.setConnection(_userConnection);
+            ledgerEntryJournalSim.setConnection(_userConnection);
+        }
+
+        // Delete in reverse hierarchy: AccountEntry -> Entry -> Header
+        delete_from generalJournalAccountEntrySim
+            exists join generalJournalEntrySim
+                where generalJournalAccountEntrySim.GeneralJournalEntry == generalJournalEntrySim.RecId
+            exists join ledgerEntryJournalSim
+                where generalJournalEntrySim.LedgerEntryJournal == ledgerEntryJournalSim.RecId
+                   && ledgerEntryJournalSim.JournalNumber == _ledgerJournalId;
+
+        delete_from generalJournalEntrySim
+            exists join ledgerEntryJournalSim
+                where generalJournalEntrySim.LedgerEntryJournal == ledgerEntryJournalSim.RecId
+                   && ledgerEntryJournalSim.JournalNumber == _ledgerJournalId;
+
+        delete_from ledgerEntryJournalSim
+            where ledgerEntryJournalSim.JournalNumber == _ledgerJournalId;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>createLedgerEntryJournalSim</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Creates the header journal simulation record
+    /// </summary>
+    public static HDG_LedgerEntryJournalSim createLedgerEntryJournalSim(
+        UserConnection _userConnection,
+        LedgerJournalId _ledgerJournalId,
+        DataAreaId _dataAreaId)
+    {
+        HDG_LedgerEntryJournalSim ledgerEntryJournalSim;
+        
+        ledgerEntryJournalSim.setConnection(_userConnection);
+        ledgerEntryJournalSim.JournalNumber = _ledgerJournalId;
+        ledgerEntryJournalSim.LedgerJournalTableDataAreaId = _dataAreaId;
+        ledgerEntryJournalSim.insert();
+        
+        return ledgerEntryJournalSim;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>processVoucherList</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Processes the voucher list and creates simulation entries
+    /// </summary>
+    public static void processVoucherList(
+        LedgerVoucherList _ledgerVoucherList,
+        HDG_LedgerEntryJournalSim _ledgerEntryJournalSim,
+        UserConnection _userConnection)
+    {
+        GeneralJournalEntry generalJournalEntry;
+        Set processedVouchers = new Set(Types::String);
+        
+        do
+        {
+            generalJournalEntry = _ledgerVoucherList.item().parmGeneralJournalEntry();
+            
+            // Create primary entry and account entries
+            HDG_LedgerJournalPostSimHelper::createGeneralJournalEntrySim(
+                generalJournalEntry,
+                _ledgerEntryJournalSim,
+                _userConnection,
+                false);
+            
+            // Process linked vouchers (e.g., foreign exchange gain/loss)
+            HDG_LedgerJournalPostSimHelper::processLinkedVouchers(
+                generalJournalEntry,
+                _ledgerEntryJournalSim,
+                _userConnection,
+                processedVouchers);
+        }
+        while (_ledgerVoucherList.next());
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>createGeneralJournalEntrySim</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Creates a GeneralJournalEntrySim record and its related AccountEntrySim records
+    /// </summary>
+    public static void createGeneralJournalEntrySim(
+        GeneralJournalEntry _generalJournalEntry,
+        HDG_LedgerEntryJournalSim _ledgerEntryJournalSim,
+        UserConnection _userConnection,
+        boolean _isLink)
+    {
+        HDG_GeneralJournalEntrySim generalJournalEntrySim;
+        
+        generalJournalEntrySim.setConnection(_userConnection);
+        generalJournalEntrySim.initFromGeneralJournalEntry(_generalJournalEntry);
+        generalJournalEntrySim.LedgerEntryJournal = _ledgerEntryJournalSim.RecId;
+        generalJournalEntrySim.IsLink = _isLink ? NoYes::Yes : NoYes::No;
+        generalJournalEntrySim.insert();
+        
+        // Create account entries
+        HDG_LedgerJournalPostSimHelper::createAccountEntriesForJournal(
+            _generalJournalEntry.RecId,
+            generalJournalEntrySim.RecId,
+            _userConnection,
+            _isLink);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>createAccountEntriesForJournal</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Creates account entries for a given journal entry
+    /// </summary>
+    public static void createAccountEntriesForJournal(
+        RecId _sourceGeneralJournalEntryRecId,
+        RecId _targetGeneralJournalEntryRecId,
+        UserConnection _userConnection,
+        boolean _isLink)
+    {
+        GeneralJournalAccountEntry generalJournalAccountEntry;
+        HDG_GeneralJournalAccountEntrySim generalJournalAccountEntrySim;
+        
+        while select generalJournalAccountEntry
+            where generalJournalAccountEntry.GeneralJournalEntry == _sourceGeneralJournalEntryRecId
+        {
+            generalJournalAccountEntrySim.setConnection(_userConnection);
+            generalJournalAccountEntrySim.clear();
+            generalJournalAccountEntrySim.initFromGeneralJournalAccountEntry(generalJournalAccountEntry);
+            generalJournalAccountEntrySim.GeneralJournalEntry = _targetGeneralJournalEntryRecId;
+            generalJournalAccountEntrySim.IsLink = _isLink ? NoYes::Yes : NoYes::No;
+            generalJournalAccountEntrySim.insert();
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>processLinkedVouchers</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Processes linked vouchers (e.g., foreign exchange gain/loss vouchers)
+    /// </summary>
+    private static void processLinkedVouchers(
+        GeneralJournalEntry _generalJournalEntry,
+        HDG_LedgerEntryJournalSim _ledgerEntryJournalSim,
+        UserConnection _userConnection,
+        Set _processedVouchers)
+    {
+        LedgerTransVoucherLink ledgerTransVoucherLinkGrpId;
+        
+        // Find the voucher group ID
+        select firstonly VoucherGroupId from ledgerTransVoucherLinkGrpId
+            where ledgerTransVoucherLinkGrpId.Voucher == _generalJournalEntry.SubledgerVoucher
+               && ledgerTransVoucherLinkGrpId.TransDate == _generalJournalEntry.AccountingDate;
+        
+        if (!ledgerTransVoucherLinkGrpId.VoucherGroupId)
+        {
+            return;
+        }
+        
+        // Process related vouchers in the same group
+        LedgerTransVoucherLink ledgerTransVoucherLink;
+        GeneralJournalEntry generalJournalEntryLink;
+        str voucherKey;
+        
+        while select ledgerTransVoucherLink
+            where ledgerTransVoucherLink.VoucherGroupId == ledgerTransVoucherLinkGrpId.VoucherGroupId
+               && ledgerTransVoucherLink.TransDate == _generalJournalEntry.AccountingDate
+               && ledgerTransVoucherLink.Voucher != _generalJournalEntry.SubledgerVoucher
+        {
+            voucherKey = ledgerTransVoucherLink.Voucher + '#' + date2Str(ledgerTransVoucherLink.TransDate, 321, 2, -1, 2, -1, 4);
+            
+            // Skip if already processed
+            if (_processedVouchers.in(voucherKey))
+            {
+                continue;
+            }
+            
+            _processedVouchers.add(voucherKey);
+            
+            while select generalJournalEntryLink
+                where generalJournalEntryLink.SubledgerVoucher == ledgerTransVoucherLink.Voucher
+                   && generalJournalEntryLink.AccountingDate == ledgerTransVoucherLink.TransDate
+            {
+                HDG_LedgerJournalPostSimHelper::createGeneralJournalEntrySim(
+                    generalJournalEntryLink,
+                    _ledgerEntryJournalSim,
+                    _userConnection,
+                    true);
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

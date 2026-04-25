@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_LedgerJournalCheckPost_C_Extension</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[ExtensionOf(classStr(LedgerJournalCheckPost))]
+public static class HDG_LedgerJournalCheckPost_C_Extension
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>HSC_ledgerJournalCheckPost_runInternalPostPostJournalDelegate</Name>
+				<Source><![CDATA[
+    // <summary>
+    /// 시뮬레이션 Post
+    /// </summary>
+    /// <param name = "_ledgerJournalCheckPost">_ledgerJournalCheckPost</param>
+    /// <param name = "_postingSuccess">_postingSuccess</param>
+    /// <param name = "_intercompanyPostingSuccess">_intercompanyPostingSuccess</param>
+    [SubscribesTo(classStr(LedgerJournalCheckPost), delegateStr(LedgerJournalCheckPost, runInternalPostPostJournalDelegate))]
+    public static void HSC_ledgerJournalCheckPost_runInternalPostPostJournalDelegate(LedgerJournalCheckPost _ledgerJournalCheckPost, boolean _postingSuccess, boolean _intercompanyPostingSuccess)
+    {
+        // 포스트가 성공적으로 완료되었고, 시뮬레이션 포스트가 활성화된 경우, 시뮬레이션 테이블에 데이터를 입력한다.
+        if(_postingSuccess && _ledgerJournalCheckPost.parmSimulatePosting())
+        {
+            LedgerJournalId ledgerJournalId = _ledgerJournalCheckPost.parmJournalNum();
+            LedgerJournalTable localLedgerJournalTable = LedgerJournalTable::find(ledgerJournalId);
+
+            UserConnection userConnection = new UserConnection();
+            
+            try
+            {
+                ttsbegin;
+
+                // Delete existing simulation data in reverse order (child to parent)
+                HDG_LedgerJournalPostSimHelper::deleteExistingSimulationData(ledgerJournalId, userConnection);
+
+                // Create header record
+                HDG_LedgerEntryJournalSim ledgerEntryJournalSim =
+                    HDG_LedgerJournalPostSimHelper::createLedgerEntryJournalSim(
+                        userConnection,
+                        ledgerJournalId,
+                        localLedgerJournalTable.DataAreaId);
+
+                // 전표 리스트 조회
+                LedgerVoucherList ledgerVoucherList = _ledgerJournalCheckPost.parmLedgerVoucher().getInternalCollection();
+
+                if (ledgerVoucherList.first())
+                {
+                    HDG_LedgerJournalPostSimHelper::processVoucherList(
+                        ledgerVoucherList,
+                        ledgerEntryJournalSim,
+                        userConnection);
+                }
+
+                ttscommit;
+            }
+            catch
+            {
+                HDG_LedgerJournalPostSimHelper::deleteExistingSimulationData(
+                    ledgerJournalId,
+                    userConnection);
+                throw;
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>
