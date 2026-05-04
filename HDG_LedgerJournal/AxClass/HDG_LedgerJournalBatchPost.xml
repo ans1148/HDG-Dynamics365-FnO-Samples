@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_LedgerJournalBatchPost</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class HDG_LedgerJournalBatchPost
+{
+    private LedgerJournalId journalNum;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>main</Name>
+				<Source><![CDATA[
+    public static void main(Args _args)
+    {
+        if (!_args || (_args.dataset() != tableNum(LedgerJournalTable) && _args.dataset() != tableNum(LedgerJournalTrans)))
+        {
+            throw error(Error::wrongUseOfFunction(funcName()));
+        }
+
+        HDG_LedgerJournalBatchPost batchPost = new HDG_LedgerJournalBatchPost();
+
+        if(_args.dataset() == tableNum(LedgerJournalTrans))
+        {
+            LedgerJournalTrans ledgerJournalTrans = _args.record() as LedgerJournalTrans;
+            batchPost.parmJournalNum(ledgerJournalTrans.JournalNum);
+        }
+        else if(_args.dataset() == tableNum(LedgerJournalTable))
+        {
+            LedgerJournalTable ledgerJournalTable = _args.record() as LedgerJournalTable;
+            batchPost.parmJournalNum(ledgerJournalTable.JournalNum);
+        }
+
+        batchPost.run();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmJournalNum</Name>
+				<Source><![CDATA[
+    public LedgerJournalId parmJournalNum(LedgerJournalId _journalNum = journalNum)
+    {
+        journalNum = _journalNum;
+        return journalNum;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>run</Name>
+				<Source><![CDATA[
+    public void run()
+    {
+        #OCCRetryCount
+    
+        LedgerJournalTrans ledgerJournalTrans;
+
+        try
+        {
+            select count(RecId) from ledgerJournalTrans
+                where ledgerJournalTrans.JournalNum == journalNum;
+
+            // 60건 초과 분개장은 다른 Batch Task로 처리
+            if (ledgerJournalTrans.RecId > 60)
+            {
+                BatchHeader                 batchHeader;
+                BatchInfo                   localBatchInfo;
+                LedgerJournalPostBatch ledgerJournalPostBatch = LedgerJournalPostBatch::construct(journalNum, false);
+
+                batchHeader = BatchHeader::construct();
+                batchHeader.parmCaption(strFmt("Batch Post : %1", journalNum));
+
+                // Configure Batch Task
+                localBatchInfo = ledgerJournalPostBatch.batchInfo();
+                localBatchInfo.parmBatchExecute(true); // Force batch execution
+                localBatchInfo.parmCaption(batchHeader.parmCaption());
+
+                // Add Task and Save (Schedule)
+                batchHeader.addTask(ledgerJournalPostBatch);
+                batchHeader.save();
+
+                info(strFmt("Journal %1 has been scheduled for batch posting.", journalNum));
+            }
+            else
+            {
+                LedgerJournalPost::postJournal(LedgerJournalTable::find(journalNum), NoYes::Yes);
+            }
+        }
+        catch (Exception::Deadlock)
+        {
+            retry;
+        }
+        catch (Exception::UpdateConflictNotRecovered)
+        {
+            if (appl.ttsLevel() == 0)
+            {
+                if (xSession::currentRetryCount() >= #RetryNum)
+                {
+                    throw Exception::UpdateConflictNotRecovered;
+                }
+                else
+                {
+                    retry;
+                }
+            }
+            else
+            {
+                throw Exception::UpdateConflict;
+            }
+        }
+        catch
+        {
+            container errorLog = conNull();
+
+            SysInfologEnumerator enumerator = SysInfologEnumerator::newData(infolog.infologData());
+
+            while (enumerator.moveNext())
+            {
+                /* enumerator.currentException() 메서드는 현재 메시지가 예외인지 확인하는 데 사용됩니다.
+                if(enumerator.currentException() != Exception::Error)
+                {
+                    continue; // 에러가 아닌 메시지는 무시
+                }
+                */
+
+                SysInfologMessageStruct messageStruct = new SysInfologMessageStruct(enumerator.currentMessage());
+                errorLog += messageStruct.message();
+            }
+
+            // 에러가 있으면 로깅 (예: 커스텀 로그 테이블에 저장)
+            if (conLen(errorLog) > 0)
+            {
+                error(strFmt("Journal %1 errors: %2", journalNum, con2Str(errorLog, '; ')));
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

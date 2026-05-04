@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_LedgerJournalDelete</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class HDG_LedgerJournalDelete
+{
+    private LedgerJournalId journalNum;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>main</Name>
+				<Source><![CDATA[
+    public static void main(Args _args)
+    {
+        if (!_args || (_args.dataset() != tableNum(LedgerJournalTable) && _args.dataset() != tableNum(LedgerJournalTrans)))
+        {
+            throw error(Error::wrongUseOfFunction(funcName()));
+        }
+
+        HDG_LedgerJournalDelete ledgerJournalDelete = new HDG_LedgerJournalDelete();
+
+        if(_args.dataset() == tableNum(LedgerJournalTrans))
+        {
+            LedgerJournalTrans ledgerJournalTrans = _args.record() as LedgerJournalTrans;
+            ledgerJournalDelete.parmJournalNum(ledgerJournalTrans.JournalNum);
+        }
+        else if(_args.dataset() == tableNum(LedgerJournalTable))
+        {
+            LedgerJournalTable ledgerJournalTable = _args.record() as LedgerJournalTable;
+            ledgerJournalDelete.parmJournalNum(ledgerJournalTable.JournalNum);
+        }
+
+        ledgerJournalDelete.run();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmJournalNum</Name>
+				<Source><![CDATA[
+    public LedgerJournalId parmJournalNum(LedgerJournalId _journalNum = journalNum)
+    {
+        journalNum = _journalNum;
+        return journalNum;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>run</Name>
+				<Source><![CDATA[
+    public void run()
+    {
+        LedgerJournalTable ledgerJournalTable = LedgerJournalTable::find(journalNum);
+
+        Args args = new Args();
+        args.parm('DeleteJournal');
+        args.record(ledgerJournalTable);
+
+        LedgerJournalDeleteTransaction::main(args, false);
+
+        delete_from ledgerJournalTable
+            where ledgerJournalTable.JournalNum == journalNum;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>
