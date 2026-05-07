@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_ExcelUploadService</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class HDG_ExcelUploadService
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>processExcel</Name>
+				<Source><![CDATA[
+    public void processExcel(HDG_ExcelUploadContract _contract)
+    {
+        str fileUrl = _contract.parmFileUrl();
+
+        if (!fileUrl)
+        {
+            throw error("@SYS111699");
+        }
+
+        System.IO.Stream fileStream = File::UseFileFromURL(fileUrl);
+        
+        using (OfficeOpenXml.ExcelPackage package = new OfficeOpenXml.ExcelPackage(fileStream))
+        {
+            OfficeOpenXml.ExcelWorksheet worksheet = package.get_Workbook().get_Worksheets().get_Item(1);
+            int totalRows = worksheet.Dimension.End.Row;
+
+            HDG_AssetTable assetTable;
+            RecordInsertList            recordList = new RecordInsertList(tableNum(HDG_AssetTable));
+
+            ttsbegin;
+
+            for (int row = 2; row <= totalRows; row++)
+            {
+                assetTable.clear();
+                assetTable.AssetId = worksheet.Cells.get_Item(row, 1).Value; // A열
+                assetTable.AssetName = worksheet.Cells.get_Item(row, 2).Value; // B열
+                assetTable.AssetCategory = str2Int(worksheet.Cells.get_Item(row, 3).Value); // C열
+
+                recordList.add(assetTable);
+            }
+
+            recordList.insertDatabase();
+
+            ttscommit;
+        }
+
+        info("@DMF1952");
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

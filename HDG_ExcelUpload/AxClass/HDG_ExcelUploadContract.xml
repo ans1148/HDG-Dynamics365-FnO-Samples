@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_ExcelUploadContract</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContractAttribute, SysOperationContractProcessingAttribute(classStr(HDG_ExcelUploadUIBuilder))]
+public class HDG_ExcelUploadContract
+{
+    private str fileUrl;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmFileUrl</Name>
+				<Source><![CDATA[
+    [DataMemberAttribute('FileUrl'), SysOperationControlVisibility(false)]
+    public str parmFileUrl(str _fileUrl = fileUrl)
+    {
+        fileUrl = _fileUrl;
+        return fileUrl;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

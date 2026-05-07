@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_ExcelUploadController</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class HDG_ExcelUploadController extends SysOperationServiceController
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    protected void new()
+    {
+        super(classStr(HDG_ExcelUploadService), methodStr(HDG_ExcelUploadService, processExcel), SysOperationExecutionMode::Synchronous);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>main</Name>
+				<Source><![CDATA[
+    public static void main(Args _args)
+    {
+        HDG_ExcelUploadController controller = new HDG_ExcelUploadController();
+
+        controller.parmArgs(_args);
+        controller.showBatchTab(false);
+        controller.startOperation();
+
+        HDG_AssetTable assetTable = _args.record() as HDG_AssetTable;
+
+        if (_args && _args.record() && FormDataUtil::getFormDataSource(assetTable))
+        {
+            FormDataSource fds = FormDataUtil::getFormDataSource(assetTable);
+            fds.research(true);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateParameters</Name>
+				<Source><![CDATA[
+    public boolean validateParameters()
+    {
+        boolean isValid = super();
+
+        HDG_ExcelUploadContract contract = this.getDataContractObject() as HDG_ExcelUploadContract;
+
+        if (!contract || !contract.parmFileUrl())
+        {
+            isValid = checkFailed("@SYS97287");
+        }
+
+        return isValid;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

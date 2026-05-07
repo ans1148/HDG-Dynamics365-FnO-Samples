@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_ExcelUploadUIBuilder</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class HDG_ExcelUploadUIBuilder extends SysOperationAutomaticUIBuilder
+{
+    private FileUpload fileUpload;
+    private const str uploadControlName = 'ExcelUpload';
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>getAcceptedFileTypes</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// 허용할 파일 확장자를 반환합니다.
+    /// </summary>
+    protected str getAcceptedFileTypes()
+    {
+        return ".xlsx";
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>postBuild</Name>
+				<Source><![CDATA[
+    public void postBuild()
+    {
+        super();
+
+        FormBuildDesign formDesign = this.dialog().formBuildDesign();
+        FormBuildGroupControl contentGroup = formDesign.control('ParametersGroup');
+        
+        // 파일 업로드 컨트롤 추가
+        FileUploadBuild fileUploadBuild = contentGroup.addControlEx(classStr(FileUpload), uploadControlName);
+        fileUploadBuild.style(FileUploadStyle::MinimalWithFilename);
+        fileUploadBuild.baseFileUploadStrategyClassName(classStr(FileUploadTemporaryStorageStrategy));
+        fileUploadBuild.fileTypesAccepted(this.getAcceptedFileTypes());
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>postRun</Name>
+				<Source><![CDATA[
+    public void postRun()
+    {
+        super();
+
+        fileUpload = this.dialog().formRun().control(this.dialog().formRun().controlId(uploadControlName));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getFromDialog</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// 사용자가 [확인] 버튼을 누를 때 호출됩니다.
+    /// </summary>
+    public void getFromDialog()
+    {
+        super();
+
+        FileUploadTemporaryStorageResult result = fileUpload.getFileUploadResult();
+
+        if (result && result.getUploadStatus())
+        {
+            HDG_ExcelUploadContract contract = this.dataContractObject() as HDG_ExcelUploadContract;
+            contract.parmFileUrl(result.getDownloadUrl());
+        }
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>
