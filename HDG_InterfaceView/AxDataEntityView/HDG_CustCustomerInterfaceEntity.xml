@@ -1,0 +1,559 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxDataEntityView xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_CustCustomerInterfaceEntity</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class HDG_CustCustomerInterfaceEntity extends common
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>latestModifiedDateTime</Name>
+				<Source><![CDATA[
+    private static str latestModifiedDateTime()
+    {
+        str custTableModifiedDateTime = SysComputedColumn::returnField(
+            dataentityviewstr(HDG_CustCustomerInterfaceEntity),
+            dataEntityDataSourceStr(HDG_CustCustomerInterfaceEntity, CustTable),
+            fieldStr(CustTable, ModifiedDateTime));
+
+        str dirPartyModifiedDateTime = SysComputedColumn::returnField(
+            dataentityviewstr(HDG_CustCustomerInterfaceEntity),
+            dataEntityDataSourceStr(HDG_CustCustomerInterfaceEntity, DirPartyTable),
+            fieldStr(DirPartyTable, ModifiedDateTime));
+
+        str emailModifiedDateTime = SysComputedColumn::returnField(
+            dataentityviewstr(HDG_CustCustomerInterfaceEntity),
+            dataEntityDataSourceStr(HDG_CustCustomerInterfaceEntity, PrimaryContactEmail),
+            fieldStr(LogisticsElectronicAddress, ModifiedDateTime));
+
+        str phoneModifiedDateTime = SysComputedColumn::returnField(
+            dataentityviewstr(HDG_CustCustomerInterfaceEntity),
+            dataEntityDataSourceStr(HDG_CustCustomerInterfaceEntity, PrimaryContactPhone),
+            fieldStr(LogisticsElectronicAddress, ModifiedDateTime));
+
+        str deliveryAddressModifiedDateTime = SysComputedColumn::returnField(
+            dataentityviewstr(HDG_CustCustomerInterfaceEntity),
+            dataEntityDataSourceStr(HDG_CustCustomerInterfaceEntity, DeliveryLogisticsPostalAddressBaseEntity),
+            fieldStr(LogisticsPostalAddressBaseEntity, HDG_LogisticsPostalAddressModifiedDateTime));
+
+        str invoiceAddressModifiedDateTime = SysComputedColumn::returnField(
+            dataentityviewstr(HDG_CustCustomerInterfaceEntity),
+            dataEntityDataSourceStr(HDG_CustCustomerInterfaceEntity, InvoiceLogisticsPostalAddressBaseEntity),
+            fieldStr(LogisticsPostalAddressBaseEntity, HDG_LogisticsPostalAddressModifiedDateTime));
+
+        return strFmt("(SELECT MAX(MaxDateTime) FROM (VALUES " +
+            "(COALESCE(%1, '1900-01-01')), " +
+            "(COALESCE(%2, '1900-01-01')), " +
+            "(COALESCE(%3, '1900-01-01')), " +
+            "(COALESCE(%4, '1900-01-01')), " +
+            "(COALESCE(%5, '1900-01-01')), " +
+            "(COALESCE(%6, '1900-01-01'))" +
+            ") AS AllDates(MaxDateTime))",
+            custTableModifiedDateTime,
+            dirPartyModifiedDateTime,
+            emailModifiedDateTime,
+            phoneModifiedDateTime,
+            deliveryAddressModifiedDateTime,
+            invoiceAddressModifiedDateTime);
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+	<ConfigurationKey>LedgerBasic</ConfigurationKey>
+	<Label>@SYS11307</Label>
+	<SubscriberAccessLevel>
+		<Read>Allow</Read>
+	</SubscriberAccessLevel>
+	<PrimaryCompanyContext>DataAreaId</PrimaryCompanyContext>
+	<PrimaryKey>EntityKey</PrimaryKey>
+	<DeleteActions />
+	<FieldGroups>
+		<AxTableFieldGroup>
+			<Name>AutoReport</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoLookup</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoIdentification</Name>
+			<AutoPopulate>Yes</AutoPopulate>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoSummary</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoBrowse</Name>
+			<Fields />
+		</AxTableFieldGroup>
+	</FieldGroups>
+	<Fields>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>CustomerAccount</Name>
+			<AllowEdit>Yes</AllowEdit>
+			<Mandatory>No</Mandatory>
+			<DataField>AccountNum</DataField>
+			<DataSource>CustTable</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>Name</Name>
+			<DataField>Name</DataField>
+			<DataSource>DirPartyTable</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>NameAlias</Name>
+			<DataField>NameAlias</DataField>
+			<DataSource>DirPartyTable</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>PartyNumber</Name>
+			<DataField>PartyNumber</DataField>
+			<DataSource>DirPartyTable</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>PrimaryContactEmail</Name>
+			<DataField>Locator</DataField>
+			<DataSource>PrimaryContactEmail</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>PrimaryContactEmailDescription</Name>
+			<DataField>Description</DataField>
+			<DataSource>PrimaryContactEmail</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>PrimaryContactPhone</Name>
+			<DataField>Locator</DataField>
+			<DataSource>PrimaryContactPhone</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>PrimaryContactPhoneDescription</Name>
+			<DataField>Description</DataField>
+			<DataSource>PrimaryContactPhone</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>DeliveryAddressDescription</Name>
+			<Label>@AccountsReceivable:CustCustomerV3DeliveryAddressDescription</Label>
+			<Mandatory>No</Mandatory>
+			<DataField>Description</DataField>
+			<DataSource>DeliveryLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>DeliveryAddressZipCode</Name>
+			<Label>@AccountsReceivable:CustCustomerV3DeliveryAddressZipCode</Label>
+			<DataField>ZipCode</DataField>
+			<DataSource>DeliveryLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>DeliveryAddressTimeZone</Name>
+			<Label>@AccountsReceivable:CustCustomerV3DeliveryAddressTimeZone</Label>
+			<DataField>TimeZone</DataField>
+			<DataSource>DeliveryLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>DeliveryAddressCity</Name>
+			<Label>@AccountsReceivable:CustCustomerV3DeliveryAddressCity</Label>
+			<DataField>City</DataField>
+			<DataSource>DeliveryLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>DeliveryAddressCountryRegionId</Name>
+			<Label>@AccountsReceivable:CustCustomerV3DeliveryAddressCountryRegion</Label>
+			<Mandatory>No</Mandatory>
+			<DataField>CountryRegionId</DataField>
+			<DataSource>DeliveryLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>DeliveryAddressCountryRegionISOCode</Name>
+			<Label>@AccountsReceivable:CustCustomerV3DeliveryAddressCountryRegionISO</Label>
+			<DataField>CountryRegionISOCode</DataField>
+			<DataSource>DeliveryLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>DeliveryAddressCounty</Name>
+			<Label>@AccountsReceivable:CustCustomerV3DeliveryAddressCounty</Label>
+			<DataField>County</DataField>
+			<DataSource>DeliveryLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>DeliveryAddressDistrictName</Name>
+			<Label>@AccountsReceivable:CustCustomerV3DeliveryAddressDistrictName</Label>
+			<DataField>DistrictName</DataField>
+			<DataSource>DeliveryLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>DeliveryAddressLatitude</Name>
+			<Label>@AccountsReceivable:CustCustomerV3DeliveryAddressLatitude</Label>
+			<DataField>Latitude</DataField>
+			<DataSource>DeliveryLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>DeliveryAddressLongitude</Name>
+			<Label>@AccountsReceivable:CustCustomerV3DeliveryAddressLongitude</Label>
+			<DataField>Longitude</DataField>
+			<DataSource>DeliveryLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>DeliveryAddressLocationId</Name>
+			<AllowEdit>Yes</AllowEdit>
+			<AllowEditOnCreate>Yes</AllowEditOnCreate>
+			<Label>@AccountsReceivable:CustCustomerV3DeliveryAddressLocationId</Label>
+			<Mandatory>No</Mandatory>
+			<DataField>LocationId</DataField>
+			<DataSource>DeliveryLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>DeliveryAddressState</Name>
+			<Label>@AccountsReceivable:CustCustomerV3DeliveryAddressState</Label>
+			<DataField>State</DataField>
+			<DataSource>DeliveryLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>DeliveryAddressStreet</Name>
+			<Label>@AccountsReceivable:CustCustomerV3DeliveryAddressStreet</Label>
+			<DataField>Street</DataField>
+			<DataSource>DeliveryLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>DeliveryAddressStreetNumber</Name>
+			<Label>@AccountsReceivable:CustCustomerV3DeliveryAddressStreetNumber</Label>
+			<DataField>StreetNumber</DataField>
+			<DataSource>DeliveryLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>DeliveryAddressValidFrom</Name>
+			<Label>@AccountsReceivable:CustCustomerV3DeliveryAddressValidFrom</Label>
+			<DataField>ValidFrom</DataField>
+			<DataSource>DeliveryLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>DeliveryAddressValidTo</Name>
+			<Label>@AccountsReceivable:CustCustomerV3DeliveryAddressValidTo</Label>
+			<DataField>ValidTo</DataField>
+			<DataSource>DeliveryLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>InvoiceAddressDescription</Name>
+			<Label>@AccountsReceivable:CustCustomerV3InvoiceAddressDescription</Label>
+			<Mandatory>No</Mandatory>
+			<DataField>Description</DataField>
+			<DataSource>InvoiceLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>InvoiceAddressZipCode</Name>
+			<Label>@AccountsReceivable:CustCustomerV3InvoiceAddressZipCode</Label>
+			<DataField>ZipCode</DataField>
+			<DataSource>InvoiceLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>InvoiceAddressTimeZone</Name>
+			<Label>@AccountsReceivable:CustCustomerV3InvoiceAddressTimeZone</Label>
+			<DataField>TimeZone</DataField>
+			<DataSource>InvoiceLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>InvoiceAddressCity</Name>
+			<Label>@AccountsReceivable:CustCustomerV3InvoiceAddressCity</Label>
+			<DataField>City</DataField>
+			<DataSource>InvoiceLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>InvoiceAddressCountryRegionId</Name>
+			<Label>@AccountsReceivable:CustCustomerV3InvoiceAddressCountryRegion</Label>
+			<Mandatory>No</Mandatory>
+			<DataField>CountryRegionId</DataField>
+			<DataSource>InvoiceLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>InvoiceAddressCountryRegionISOCode</Name>
+			<Label>@AccountsReceivable:CustCustomerV3InvoiceAddressCountryRegionISO</Label>
+			<DataField>CountryRegionISOCode</DataField>
+			<DataSource>InvoiceLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>InvoiceAddressCounty</Name>
+			<Label>@AccountsReceivable:CustCustomerV3InvoiceAddressCounty</Label>
+			<DataField>County</DataField>
+			<DataSource>InvoiceLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>InvoiceAddressDistrictName</Name>
+			<Label>@AccountsReceivable:CustCustomerV3InvoiceAddressDisctrictName</Label>
+			<DataField>DistrictName</DataField>
+			<DataSource>InvoiceLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>InvoiceAddressLatitude</Name>
+			<Label>@AccountsReceivable:CustCustomerV3InvoiceAddressLatitude</Label>
+			<DataField>Latitude</DataField>
+			<DataSource>InvoiceLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>InvoiceAddressLongitude</Name>
+			<Label>@AccountsReceivable:CustCustomerV3InvoiceAddressLongitude</Label>
+			<DataField>Longitude</DataField>
+			<DataSource>InvoiceLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>InvoiceAddressLocationId</Name>
+			<AllowEdit>Yes</AllowEdit>
+			<AllowEditOnCreate>Yes</AllowEditOnCreate>
+			<Label>@AccountsReceivable:CustCustomerV3InvoiceAddressLocationId</Label>
+			<Mandatory>No</Mandatory>
+			<DataField>LocationId</DataField>
+			<DataSource>InvoiceLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>InvoiceAddressState</Name>
+			<Label>@AccountsReceivable:CustCustomerV3InvoiceAddressState</Label>
+			<DataField>State</DataField>
+			<DataSource>InvoiceLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>InvoiceAddressStreet</Name>
+			<Label>@AccountsReceivable:CustCustomerV3InvoiceAddressStreet</Label>
+			<DataField>Street</DataField>
+			<DataSource>InvoiceLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>InvoiceAddressStreetNumber</Name>
+			<Label>@AccountsReceivable:CustCustomerV3InvoiceAddressStreetNumber</Label>
+			<DataField>StreetNumber</DataField>
+			<DataSource>InvoiceLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>InvoiceAddressValidFrom</Name>
+			<Label>@AccountsReceivable:CustCustomerV3InvoiceAddressValidFrom</Label>
+			<DataField>ValidFrom</DataField>
+			<DataSource>InvoiceLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewMappedField">
+			<Name>InvoiceAddressValidTo</Name>
+			<Label>@AccountsReceivable:CustCustomerV3InvoiceAddressValidTo</Label>
+			<DataField>ValidTo</DataField>
+			<DataSource>InvoiceLogisticsPostalAddressBaseEntity</DataSource>
+		</AxDataEntityViewField>
+		<AxDataEntityViewField xmlns=""
+			i:type="AxDataEntityViewUnmappedFieldUtcDateTime">
+			<Name>LatestModifiedDateTime</Name>
+			<ComputedFieldMethod>latestModifiedDateTime</ComputedFieldMethod>
+		</AxDataEntityViewField>
+	</Fields>
+	<Keys>
+		<AxDataEntityViewKey>
+			<Name>EntityKey</Name>
+			<Fields />
+		</AxDataEntityViewKey>
+	</Keys>
+	<Mappings />
+	<Ranges />
+	<Relations />
+	<StateMachines />
+	<ViewMetadata>
+		<Name>Metadata</Name>
+		<SourceCode>
+			<Methods>
+				<Method>
+					<Name>classDeclaration</Name>
+					<Source><![CDATA[
+[Query]
+public class Metadata extends QueryRun
+{
+}
+]]></Source>
+				</Method>
+			</Methods>
+		</SourceCode>
+		<DataSources>
+			<AxQuerySimpleRootDataSource>
+				<Name>CustTable</Name>
+				<DynamicFields>Yes</DynamicFields>
+				<Table>CustTable</Table>
+				<DataSources>
+					<AxQuerySimpleEmbeddedDataSource>
+						<Name>DirPartyTable</Name>
+						<DynamicFields>Yes</DynamicFields>
+						<Table>DirPartyTable</Table>
+						<DataSources>
+							<AxQuerySimpleEmbeddedDataSource>
+								<Name>PrimaryContactEmail</Name>
+								<DynamicFields>Yes</DynamicFields>
+								<Table>LogisticsElectronicAddress</Table>
+								<DataSources />
+								<DerivedDataSources />
+								<Fields />
+								<Ranges>
+									<AxQuerySimpleDataSourceRange>
+										<Name>IsPrimary</Name>
+										<Field>IsPrimary</Field>
+										<Value>Yes</Value>
+									</AxQuerySimpleDataSourceRange>
+								</Ranges>
+								<JoinMode>OuterJoin</JoinMode>
+								<Relations>
+									<AxQuerySimpleDataSourceRelation>
+										<Name>QueryDataSourceRelation1</Name>
+										<Field>PrimaryContactEmail</Field>
+										<JoinDataSource>DirPartyTable</JoinDataSource>
+										<RelatedField>RecId</RelatedField>
+									</AxQuerySimpleDataSourceRelation>
+								</Relations>
+							</AxQuerySimpleEmbeddedDataSource>
+							<AxQuerySimpleEmbeddedDataSource>
+								<Name>PrimaryContactPhone</Name>
+								<DynamicFields>Yes</DynamicFields>
+								<Table>LogisticsElectronicAddress</Table>
+								<DataSources />
+								<DerivedDataSources />
+								<Fields />
+								<Ranges />
+								<JoinMode>OuterJoin</JoinMode>
+								<Relations>
+									<AxQuerySimpleDataSourceRelation>
+										<Name>QueryDataSourceRelation1</Name>
+										<Field>PrimaryContactPhone</Field>
+										<JoinDataSource>DirPartyTable</JoinDataSource>
+										<RelatedField>RecId</RelatedField>
+									</AxQuerySimpleDataSourceRelation>
+								</Relations>
+							</AxQuerySimpleEmbeddedDataSource>
+						</DataSources>
+						<DerivedDataSources />
+						<Fields />
+						<Ranges />
+						<UseRelations>Yes</UseRelations>
+						<Relations />
+					</AxQuerySimpleEmbeddedDataSource>
+					<AxQuerySimpleEmbeddedDataSource>
+						<Name>DefaultDeliveryLocation</Name>
+						<DynamicFields>Yes</DynamicFields>
+						<Table>CustDefaultDeliveryLocationView</Table>
+						<DataSources>
+							<AxQuerySimpleEmbeddedDataSource>
+								<Name>DeliveryLogisticsPostalAddressBaseEntity</Name>
+								<ApplyDateFilter>Yes</ApplyDateFilter>
+								<DynamicFields>Yes</DynamicFields>
+								<Table>LogisticsPostalAddressBaseEntity</Table>
+								<DataSources />
+								<DerivedDataSources />
+								<Fields />
+								<Ranges />
+								<JoinMode>OuterJoin</JoinMode>
+								<Relations>
+									<AxQuerySimpleDataSourceRelation>
+										<Name>QueryDataSourceRelation1</Name>
+										<Field>Location</Field>
+										<JoinDataSource>DefaultDeliveryLocation</JoinDataSource>
+										<RelatedField>LocationRecId</RelatedField>
+									</AxQuerySimpleDataSourceRelation>
+								</Relations>
+							</AxQuerySimpleEmbeddedDataSource>
+						</DataSources>
+						<DerivedDataSources />
+						<Fields />
+						<Ranges />
+						<JoinMode>OuterJoin</JoinMode>
+						<Relations>
+							<AxQuerySimpleDataSourceRelation>
+								<Name>QueryDataSourceRelation1</Name>
+								<Field>RecId</Field>
+								<JoinDataSource>CustTable</JoinDataSource>
+								<RelatedField>CustTableRecId</RelatedField>
+							</AxQuerySimpleDataSourceRelation>
+						</Relations>
+					</AxQuerySimpleEmbeddedDataSource>
+					<AxQuerySimpleEmbeddedDataSource>
+						<Name>DefaultInvoiceLocation</Name>
+						<DynamicFields>Yes</DynamicFields>
+						<Table>CustDefaultInvoiceLocationView</Table>
+						<DataSources>
+							<AxQuerySimpleEmbeddedDataSource>
+								<Name>InvoiceLogisticsPostalAddressBaseEntity</Name>
+								<ApplyDateFilter>Yes</ApplyDateFilter>
+								<DynamicFields>Yes</DynamicFields>
+								<Table>LogisticsPostalAddressBaseEntity</Table>
+								<DataSources />
+								<DerivedDataSources />
+								<Fields />
+								<Ranges />
+								<JoinMode>OuterJoin</JoinMode>
+								<Relations>
+									<AxQuerySimpleDataSourceRelation>
+										<Name>QueryDataSourceRelation1</Name>
+										<Field>Location</Field>
+										<JoinDataSource>DefaultInvoiceLocation</JoinDataSource>
+										<RelatedField>LocationRecId</RelatedField>
+									</AxQuerySimpleDataSourceRelation>
+								</Relations>
+							</AxQuerySimpleEmbeddedDataSource>
+						</DataSources>
+						<DerivedDataSources />
+						<Fields />
+						<Ranges />
+						<JoinMode>OuterJoin</JoinMode>
+						<Relations>
+							<AxQuerySimpleDataSourceRelation>
+								<Name>QueryDataSourceRelation1</Name>
+								<Field>RecId</Field>
+								<JoinDataSource>CustTable</JoinDataSource>
+								<RelatedField>CustTableRecId</RelatedField>
+							</AxQuerySimpleDataSourceRelation>
+						</Relations>
+					</AxQuerySimpleEmbeddedDataSource>
+				</DataSources>
+				<DerivedDataSources />
+				<Fields />
+				<Ranges />
+				<GroupBy />
+				<Having />
+				<OrderBy />
+			</AxQuerySimpleRootDataSource>
+		</DataSources>
+	</ViewMetadata>
+</AxDataEntityView>
