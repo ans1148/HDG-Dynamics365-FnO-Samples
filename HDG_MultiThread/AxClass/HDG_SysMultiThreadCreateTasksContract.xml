@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_SysMultiThreadCreateTasksContract</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContractAttribute]
+public class HDG_SysMultiThreadCreateTasksContract
+{
+    int numberOfThreads;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmNumberOfThreads</Name>
+				<Source><![CDATA[
+    [DataMemberAttribute('NumberOfThreads'), SysOperationLabel(literalStr("@DMF778"))]
+    public int parmNumberOfThreads(int _numberOfThreads = numberOfThreads)
+    {
+        numberOfThreads = _numberOfThreads;
+
+        return numberOfThreads;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_SysMultiThreadCreateTasksController</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class HDG_SysMultiThreadCreateTasksController extends SysOperationServiceController
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    protected void new()
+    {
+        super(classStr(HDG_SysMultiThreadCreateTasksService),
+            methodStr(HDG_SysMultiThreadCreateTasksService, process), SysOperationExecutionMode::Synchronous);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>mustGoBatch</Name>
+				<Source><![CDATA[
+    public boolean mustGoBatch()
+    {
+        return true;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>defaultCaption</Name>
+				<Source><![CDATA[
+    public ClassDescription defaultCaption()
+    {
+        return "Create multithreading tasks";
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>construct</Name>
+				<Source><![CDATA[
+    public static HDG_SysMultiThreadCreateTasksController construct(SysOperationExecutionMode _executionMode = SysOperationExecutionMode::Synchronous)
+    {
+        HDG_SysMultiThreadCreateTasksController controller = new HDG_SysMultiThreadCreateTasksController();
+        controller.parmExecutionMode(_executionMode);
+        return controller;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>main</Name>
+				<Source><![CDATA[
+    public static void main(Args _args)
+    {
+        HDG_SysMultiThreadCreateTasksController multiThreadingCreateTasksController = HDG_SysMultiThreadCreateTasksController::construct();
+        
+        HDG_SysMultiThreadCreateTasksContract contract = multiThreadingCreateTasksController.getDataContractObject() as HDG_SysMultiThreadCreateTasksContract;
+        contract.parmNumberOfThreads(4);
+
+        multiThreadingCreateTasksController.parmArgs(_args);
+        multiThreadingCreateTasksController.startOperation();
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

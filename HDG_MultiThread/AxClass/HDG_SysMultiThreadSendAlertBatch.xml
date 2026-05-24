@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_SysMultiThreadSendAlertBatch</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class HDG_SysMultiThreadSendAlertBatch extends RunBaseBatch
+{
+    str userId;
+
+    #define.CurrentVersion(1)
+    #localmacro.CurrentList
+        userId
+    #endmacro
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmUserId</Name>
+				<Source><![CDATA[
+    public str parmUserId(str _userId = userId)
+    {
+        userId = _userId;
+        return userId;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>construct</Name>
+				<Source><![CDATA[
+    public server static HDG_SysMultiThreadSendAlertBatch construct()
+    {
+        return new HDG_SysMultiThreadSendAlertBatch();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>canGoBatchJournal</Name>
+				<Source><![CDATA[
+    protected boolean canGoBatchJournal()
+    {
+        return true;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>canRunInNewSession</Name>
+				<Source><![CDATA[
+    protected boolean canRunInNewSession()
+    {
+        return false;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>caption</Name>
+				<Source><![CDATA[
+    public ClassDescription caption()
+    {
+        return "Send alert when the batch is finished";
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>pack</Name>
+				<Source><![CDATA[
+    public container pack()
+    {
+        return [#CurrentVersion, #CurrentList];
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>unpack</Name>
+				<Source><![CDATA[
+    public boolean unpack(container _packedClass)
+    {
+        int version = RunBase::getVersion(_packedClass);
+
+        switch (version)
+        {
+            case #CurrentVersion:
+                [version, #CurrentList] = _packedClass;
+                break;
+
+            default:
+                return false;
+        }
+
+        return true;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>main</Name>
+				<Source><![CDATA[
+    public static void main(Args _args)
+    {
+        HDG_SysMultiThreadSendAlertBatch batch = HDG_SysMultiThreadSendAlertBatch::construct();
+
+        if (batch.prompt())
+        {
+            batch.runOperation();
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>run</Name>
+				<Source><![CDATA[
+    public void run()
+    {
+        str                     messageText;
+
+        messageText = "Multi-thread processing has been completed.";
+
+        // Set up the notification
+        SystemNotificationDataContract notification = new SystemNotificationDataContract();
+        notification.Users().value(1, userId);
+        notification.Title("Multi-thread finished");
+        notification.RuleId('HDG_SysMultiThreadSendAlertBatch');
+        notification.Message(messageText);
+        notification.ExpirationDateTime(DateTimeUtil::addHours(DateTimeUtil::utcNow(), 48));
+
+        SystemNotificationsManager::AddSystemNotification(notification);
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

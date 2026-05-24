@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_SysMultiThreadCreateTasksService</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class HDG_SysMultiThreadCreateTasksService extends SysOperationServiceBase
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>process</Name>
+				<Source><![CDATA[
+    public void process(HDG_SysMultiThreadCreateTasksContract  _contract)
+    {
+        BatchHeader                             batchHeader;
+        SysOperationServiceController           controller;
+        HDG_SysMultiThreadPending               pendingTable;
+        int                                     totalNumberOfTasksNeeded = _contract.parmNumberOfThreads();
+        int                                     threadCount;
+        SalesTable                              salesTable;
+
+        ProcessExecutionStatus processScheduled = ProcessExecutionStatus::Scheduled;
+
+        // Inserting records to staging table for processing
+        insert_recordset pendingTable(RefRecId, ProcessExecutionStatus)
+            select RecId, processScheduled from salesTable;
+
+        select count(RecId) from pendingTable where
+            pendingTable.ProcessExecutionStatus == ProcessExecutionStatus::Scheduled;
+        
+        if (pendingTable.RecId > 0)
+        {
+            update_recordset pendingTable
+                setting ProcessExecutionStatus = ProcessExecutionStatus::SentToBatch
+                where pendingTable.ProcessExecutionStatus == ProcessExecutionStatus::Scheduled;
+
+            batchHeader = this.getCurrentBatchHeader();
+
+            // Creating tasks
+            for(threadCount = 1; threadCount <= totalNumberOfTasksNeeded; threadCount++)
+            {
+                controller = HDG_SysMultiThreadProcessController::construct();
+                batchHeader.addTask(controller);
+            }
+
+            //// Adding dependency to ensure alert batch job runs after all processing tasks are completed
+            HDG_SysMultiThreadSendAlertBatch alertBatch = HDG_SysMultiThreadSendAlertBatch::construct();
+            alertBatch.parmUserId(curUserId());
+            batchHeader.addTask(alertBatch);
+            batchHeader.addDependency(alertBatch, controller, BatchDependencyStatus::Finished);
+
+            batchHeader.save();
+        }
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_SysMultiThreadProcessService</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class HDG_SysMultiThreadProcessService extends SysOperationServiceBase
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>process</Name>
+				<Source><![CDATA[
+    public void process()
+    {
+        HDG_SysMultiThreadPending    pendingTable;
+
+        // 1. 처리할 대상이 없을 때까지 반복
+        while (true)
+        {
+            pendingTable.clear();
+            // [단계 1] 레코드 선점 (Transaction 1)
+            // 다른 스레드와 경합을 피하기 위해 빠르게 상태를 변경하고 커밋합니다.
+            ttsbegin;
+            
+            pendingTable.readPast(true);
+            select pessimisticlock firstOnly pendingTable
+                where pendingTable.ProcessExecutionStatus == ProcessExecutionStatus::SentToBatch;
+
+            if (!pendingTable)
+            {
+                ttsabort;
+                break; // 처리 대상 없음
+            }
+
+            try
+            {
+                // 다른 스레드가 잡지 못하도록 우선 'Processing' 상태로 변경 (표준 규약에 따라 Complete 전 중간상태 권장)
+                // 여기서는 기존 로직 유지 위해 Complete를 임시 점유 상태로 활용하거나 별도 상태값 사용 가능
+                pendingTable.ProcessExecutionStatus = ProcessExecutionStatus::Executing;
+                pendingTable.update();
+                ttscommit;
+            }
+            catch
+            {
+                ttsabort;
+                continue; // 다음 레코드 시도
+            }
+
+            // [단계 2] 비즈니스 로직 및 API 호출 (Transaction 외부)
+            // 외부 Helper 내부의 ttscommit이 현재 프로세스 흐름에 영향을 주지 않도록 트랜잭션이 없는 상태에서 호출합니다.
+            try
+            {
+                // Process 
+                Info(strFmt("RefRecId : %1", pendingTable.RefRecId));
+
+                this.updateStagingStatus(pendingTable.RecId, ProcessExecutionStatus::Complete);
+            }
+            catch
+            {
+                // API 호출 중 런타임 에러 발생 시 에러 상태 기록
+                this.updateStagingStatus(pendingTable.RecId, ProcessExecutionStatus::Error);
+                exceptionTextFallThrough();
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>updateStagingStatus</Name>
+				<Source><![CDATA[
+    private void updateStagingStatus(RefRecId _stagingRecId, ProcessExecutionStatus _status)
+    {
+        HDG_SysMultiThreadPending pendingTableUpdate;
+
+        ttsbegin;
+
+        select pessimisticlock pendingTableUpdate
+            where pendingTableUpdate.RecId == _stagingRecId;
+
+        if (pendingTableUpdate)
+        {
+            pendingTableUpdate.ProcessExecutionStatus = _status;
+            pendingTableUpdate.update();
+        }
+
+        ttscommit;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>
