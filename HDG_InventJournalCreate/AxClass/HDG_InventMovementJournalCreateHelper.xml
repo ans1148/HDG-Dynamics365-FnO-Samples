@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_InventMovementJournalCreateHelper</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class HDG_InventMovementJournalCreateHelper extends HDG_InventJournalCreateBase
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>initJournalTrans</Name>
+				<Source><![CDATA[
+    InventJournalTrans initJournalTrans(InventJournalTable _inventJournalTable, HDG_InventTransMovJournalCreateContract _contract)
+    {
+        InventJournalTrans inventJournalTrans;
+
+        inventJournalTrans.clear();
+        inventJournalTrans.initFromInventJournalTable(_inventJournalTable);
+        inventJournalTrans.initFromInventTable(InventTable::find(_contract.parmItemId()));
+        inventJournalTrans.TransDate    = _contract.parmTransDate();
+
+        inventJournalTrans.Qty          = _contract.parmQty();
+        inventJournalTrans.CostPrice    = _contract.parmCostPrice();
+        inventJournalTrans.modifyInventJournalTransUnitQty();
+
+        // Inventory dimension
+        inventJournalTrans.InventDimId      = _contract.parmFromInventDimId();
+
+        return inventJournalTrans;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getDefaultJournalName</Name>
+				<Source><![CDATA[
+    public InventJournalName getDefaultJournalName()
+    {
+        return InventJournalName::find(InventParameters::find().MovementJournalNameId);
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

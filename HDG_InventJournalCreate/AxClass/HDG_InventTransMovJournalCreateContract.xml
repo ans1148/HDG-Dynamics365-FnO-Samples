@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_InventTransMovJournalCreateContract</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContractAttribute]
+public class HDG_InventTransMovJournalCreateContract
+{
+    private JournalTransDate transDate;
+    private ItemIdInventoried itemId;
+    private InventQtyJournal qty;
+    private ItemCostPrice costPrice;
+    private InventDimId fromInventDimId, toInventDimId;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmTransDate</Name>
+				<Source><![CDATA[
+    [DataMemberAttribute("TransDate")]
+    public JournalTransDate parmTransDate(JournalTransDate _transDate = transDate)
+    {
+        transDate = _transDate;
+        return transDate;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmItemId</Name>
+				<Source><![CDATA[
+    [DataMemberAttribute("ItemId")]
+    public ItemIdInventoried parmItemId(ItemIdInventoried _itemId = itemId)
+    {
+        itemId = _itemId;
+        return itemId;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmCostPrice</Name>
+				<Source><![CDATA[
+    [DataMemberAttribute("CostPrice")]
+    public ItemCostPrice parmCostPrice(ItemCostPrice _costPrice = costPrice)
+    {
+        costPrice = _costPrice;
+        return costPrice;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmQty</Name>
+				<Source><![CDATA[
+    [DataMemberAttribute("Qty")]
+    public InventQtyJournal parmQty(InventQtyJournal _qty = qty)
+    {
+        qty = _qty;
+        return qty;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmFromInventDimId</Name>
+				<Source><![CDATA[
+    [DataMemberAttribute("FromInventDimId")]
+    public InventDimId parmFromInventDimId(InventDimId _fromInventDimId = fromInventDimId)
+    {
+        fromInventDimId = _fromInventDimId;
+        return fromInventDimId;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmToInventDimId</Name>
+				<Source><![CDATA[
+    [DataMemberAttribute("ToInventDimId")]
+    public InventDimId parmToInventDimId(InventDimId _toInventDimId = toInventDimId)
+    {
+        toInventDimId = _toInventDimId;
+        return toInventDimId;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>
