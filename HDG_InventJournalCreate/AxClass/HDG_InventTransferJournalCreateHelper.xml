@@ -39,7 +39,14 @@ public class HDG_InventTransferJournalCreateHelper extends HDG_InventJournalCrea
 				<Source><![CDATA[
     public InventJournalName getDefaultJournalName()
     {
-        return InventJournalName::find(InventParameters::find().TransferJournalNameId);
+        if(this.parmJournalNameId())
+        {
+            return InventJournalName::find(this.parmJournalNameId());
+        }
+        else
+        {
+            return InventJournalName::find(InventParameters::find().TransferJournalNameId);
+        }
     }
 
 ]]></Source>

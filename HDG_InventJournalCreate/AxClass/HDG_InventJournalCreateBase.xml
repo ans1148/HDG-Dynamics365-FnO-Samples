@@ -6,11 +6,12 @@
 public abstract class HDG_InventJournalCreateBase
 {
     private boolean postEnabled;
+    private InventJournalNameId journalNameId;
     private Num journalId;
     private List inventJournalLines;
+    private Map resultMap;
 
 }
-
 ]]></Declaration>
 		<Methods>
 			<Method>
@@ -21,6 +22,17 @@ public abstract class HDG_InventJournalCreateBase
     {
         inventJournalLines = _list;
         return inventJournalLines;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmJournalNameId</Name>
+				<Source><![CDATA[
+    public InventJournalNameId parmJournalNameId(InventJournalNameId _journalNameId = journalNameId)
+    {
+        journalNameId = _journalNameId;
+        return journalNameId;
     }
 
 ]]></Source>
@@ -50,6 +62,17 @@ public abstract class HDG_InventJournalCreateBase
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>parmResultMap</Name>
+				<Source><![CDATA[
+    public Map parmResultMap(Map _resultMap = resultMap)
+    {
+        resultMap = _resultMap;
+        return resultMap;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>run</Name>
 				<Source><![CDATA[
     public void run()
@@ -64,6 +87,7 @@ public abstract class HDG_InventJournalCreateBase
         // Create journal table
         InventJournalTable inventJournalTable = this.createJournalTable();
 
+        resultMap = new Map(Types::Int64, Types::String);
         ListEnumerator enumerator = this.parmInventJournalLines().getEnumerator();
         while (enumerator.moveNext())
         {
@@ -73,6 +97,8 @@ public abstract class HDG_InventJournalCreateBase
             InventJournalTrans inventJournalTrans = this.initJournalTrans(inventJournalTable, lineRecord);
 
             inventJournalTrans.insert();
+
+            resultMap.add(lineRecord.parmOriginalRecId(), inventJournalTrans.InventTransId);
         }
 
         // Post Inventory journal

@@ -11,6 +11,7 @@ public class HDG_InventTransMovJournalCreateContract
     private InventQtyJournal qty;
     private ItemCostPrice costPrice;
     private InventDimId fromInventDimId, toInventDimId;
+    private RefRecId originalRecId;
 
 }
 ]]></Declaration>
@@ -83,6 +84,18 @@ public class HDG_InventTransMovJournalCreateContract
     {
         toInventDimId = _toInventDimId;
         return toInventDimId;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmOriginalRecId</Name>
+				<Source><![CDATA[
+    [DataMemberAttribute("OriginalRecId")]
+    public RefRecId parmOriginalRecId(RefRecId _originalRecId = originalRecId)
+    {
+        originalRecId = _originalRecId;
+        return originalRecId;
     }
 
 ]]></Source>
