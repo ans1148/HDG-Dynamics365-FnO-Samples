@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_PurchReceiptHelper</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class HDG_PurchReceiptHelper
+{
+    PurchParmUpdate                 purchParmUpdate;
+    FormletterOutputContract        formletterOutputContract;
+    PurchTable                      purchTable;
+    Map mapPurchTable;
+
+    private Num num;
+    private TransDate transDate;
+    private List gList;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmNum</Name>
+				<Source><![CDATA[
+    [DataMemberAttribute("Num")]
+    public Num parmNum(Num _num = num)
+    {
+        num = _num;
+        return num;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmTransDate</Name>
+				<Source><![CDATA[
+    [DataMemberAttribute("TransDate")]
+    public TransDate parmTransDate(TransDate _transDate = transDate)
+    {
+        transDate = _transDate;
+        return transDate;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmPurchReceiptList</Name>
+				<Source><![CDATA[
+    public List parmPurchReceiptList(List _list)
+    {
+        gList = _list;
+        return gList;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmFormletterOutputContract</Name>
+				<Source><![CDATA[
+    public FormletterOutputContract parmFormletterOutputContract(FormletterOutputContract _formletterOutputContract = formletterOutputContract)
+    {
+        formletterOutputContract = _formletterOutputContract;
+        return formletterOutputContract;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validate</Name>
+				<Source><![CDATA[
+    public boolean validate()
+    {
+        if(!gList || gList.empty())
+        {
+            throw error('The purchase receipt list cannot be empty.');
+        }
+
+        if(!transDate)
+        {
+            throw error('The transaction date is not valid.');
+        }
+
+        if(!num)
+        {
+            throw error('The number of receipt is not valid.');
+        }
+
+        return true;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>run</Name>
+				<Source><![CDATA[
+    public void run()
+    {
+        HDG_PurchReceiptContract contract;
+
+        mapPurchTable = new Map(typeName2Type(extendedTypeStr(RecId)), Types::Record);
+        
+        ListEnumerator listEnumerator = gList.getEnumerator();
+
+        while(listEnumerator.moveNext())
+        {
+            contract = listEnumerator.current();
+
+            PurchLine purchLine = PurchLine::find(contract.parmPurchId(), contract.parmLineNumber());
+
+            // Validate
+            if(!purchLine)
+            {
+                throw error('Purchase order information is not valid.');
+            }
+
+            if(!mapPurchTable.exists(contract.parmPurchId()))
+            {
+                purchTable = PurchTable::find(contract.parmPurchId());
+                mapPurchTable.insert(purchTable.RecId, purchTable);
+            }
+
+            this.registerPurchLine(contract);
+        }
+
+        // Post purchase receipt
+        this.postPurchReceipt();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>registerPurchLine</Name>
+				<Source><![CDATA[
+    private void registerPurchLine(HDG_PurchReceiptContract _contract)
+    {
+        PurchLine               purchLine;
+        InventTrans             inventTranslocal;
+        InventDim               inventDimlocal;
+       
+        purchLine = PurchLine::find(_contract.parmPurchId(), _contract.parmLineNumber());
+
+        // Get original InventTransId, InventDim
+        inventTranslocal = InventTrans::findTransId(purchLine.InventTransId, true);
+        inventDimlocal   = inventTranslocal.inventDim();
+ 
+        // Set InventDim to InventTrans record
+        inventTranslocal.inventDimId    = _contract.parmInventDimId();
+
+        // Create register data
+        InventTransWMS_Register inventTransWMS_register;
+        TmpInventTransWMS       tmpInventTransWMS;
+
+        inventTransWMS_register         = inventTransWMS_register::newStandard(tmpInventTransWMS);
+
+        tmpInventTransWMS.clear();
+        tmpInventTransWMS.initFromInventTrans(inventTranslocal);
+        tmpInventTransWMS.ItemId    = inventTranslocal.ItemId;
+        tmpInventTransWMS.InventQty = _contract.parmReceiveQty();
+        tmpInventTransWMS.insert();
+
+        inventTransWMS_register.writeTmpInventTransWMS(tmpInventTransWMS,
+                                                       inventTranslocal,
+                                                       inventDimlocal);
+       
+        inventTransWMS_register.updateInvent(inventTranslocal);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>postPurchReceipt</Name>
+				<Source><![CDATA[
+    private void postPurchReceipt()
+    {
+        PurchFormLetter_PackingSlip purchFormLetter_PackingSlip;
+
+        if (!mapPurchTable.empty())
+        {
+            purchFormLetter_PackingSlip = PurchFormLetter::construct(DocumentStatus::PackingSlip);
+            purchFormLetter_PackingSlip.parmDataSourceRecordsPacked(mapPurchTable.pack());
+            purchFormLetter_PackingSlip.initNewPurchParmUpdate();
+            purchFormLetter_PackingSlip.sumBy(AccountOrder::Account);
+            purchFormLetter_PackingSlip.reArrangeNow(true);
+            purchFormLetter_PackingSlip.update(purchTable, num, transDate, PurchUpdate::Recorded);
+
+            formletterOutputContract = purchFormLetter_PackingSlip.getOutputContract();
+        }
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

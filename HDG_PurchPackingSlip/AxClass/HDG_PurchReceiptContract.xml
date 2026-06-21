@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>HDG_PurchReceiptContract</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContractAttribute]
+public class HDG_PurchReceiptContract
+{
+    private PurchId purchId;
+    private TradeLineNumber lineNumber;
+    private PurchQty receiveQty;
+    private InventDimId inventDimId;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmPurchId</Name>
+				<Source><![CDATA[
+    [DataMemberAttribute("PurchId")]
+    public PurchId parmPurchId(PurchId _purchId = purchId)
+    {
+        purchId = _purchId;
+        return purchId;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmLineNumber</Name>
+				<Source><![CDATA[
+    [DataMemberAttribute("LineNumber")]
+    public TradeLineNumber parmLineNumber(TradeLineNumber _lineNumber = lineNumber)
+    {
+        lineNumber = _lineNumber;
+        return lineNumber;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmReceiveQty</Name>
+				<Source><![CDATA[
+    [DataMemberAttribute("ReceiveQty")]
+    public PurchQty parmReceiveQty(PurchQty _receiveQty = receiveQty)
+    {
+        receiveQty = _receiveQty;
+        return receiveQty;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmInventDimId</Name>
+				<Source><![CDATA[
+    [DataMemberAttribute("InventDimId")]
+    public InventDimId parmInventDimId(InventDimId _inventDimId = inventDimId)
+    {
+        inventDimId = _inventDimId;
+        return inventDimId;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>
