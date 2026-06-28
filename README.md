@@ -1,4 +1,3 @@
-```markdown
 # Microsoft Dynamics 365 Finance & Operations - HDG Samples
 
 Welcome to the **HDG-Dynamics365-FnO-Samples** repository. This repository provides robust, production-ready X++ sample models designed for Microsoft Dynamics 365 Finance and Operations (D365 F&O). Instead of generic tutorials, this project focuses on isolated, model-driven architectural patterns that solve real-world business requirements.
