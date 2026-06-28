@@ -24,6 +24,9 @@ public class HDG_InventMovementJournalCreateHelper extends HDG_InventJournalCrea
         inventJournalTrans.CostPrice    = _contract.parmCostPrice();
         inventJournalTrans.modifyInventJournalTransUnitQty();
 
+        inventJournalTrans.DefaultDimension = _contract.parmDefaultDimension();
+        inventJournalTrans.modifiedField(fieldNum(InventJournalTrans, DefaultDimension));
+
         // Inventory dimension
         inventJournalTrans.InventDimId      = _contract.parmFromInventDimId();
 

@@ -11,6 +11,7 @@ public class HDG_InventTransMovJournalCreateContract
     private InventQtyJournal qty;
     private ItemCostPrice costPrice;
     private InventDimId fromInventDimId, toInventDimId;
+    private int64 defaultDimension;
     private RefRecId originalRecId;
 
 }
@@ -84,6 +85,18 @@ public class HDG_InventTransMovJournalCreateContract
     {
         toInventDimId = _toInventDimId;
         return toInventDimId;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmDefaultDimension</Name>
+				<Source><![CDATA[
+    [DataMemberAttribute("DefaultDimension")]
+    public int64 parmDefaultDimension(int64 _defaultDimension = defaultDimension)
+    {
+        defaultDimension = _defaultDimension;
+        return defaultDimension;
     }
 
 ]]></Source>
