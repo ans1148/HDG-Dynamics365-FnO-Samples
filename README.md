@@ -72,6 +72,8 @@ The metadata repository follows the native Visual Studio package layout required
       ├── 📁 Descriptor          # Model metadata and reference definitions
       └── 📁 XppSource            # Contains AxClass, AxTable, AxForm metadata XMLs
 
+---
+
 🚀 Deployment & Compilation Guide
 Clone the Repository:
 
